@@ -23,8 +23,14 @@ def health():
 
 @api.route('/todos', methods=['GET'])
 def get_todos():
+    query = Todo.query
+
+    completed = request.args.get('completed')
+    if completed is not None:
+        query = query.filter_by(completed=True)
+
     """Return the list of todo items"""
-    todos = Todo.query.all()
+    todos = query.all()
     result = []
     for todo in todos:
         result.append(todo.to_dict())
@@ -40,15 +46,33 @@ def get_todo(todo_id):
 
 @api.route('/todos', methods=['POST'])
 def create_todo():
+    #Ensure request is JSON
+    if not request.is_json:
+        return jsonify({'error': 'Request must be JSON'}), 400
+    
+    # Set a request.json variable for redundance
+    data = request.json
+
+    # Permitted fields
+    permitted_fields = {'title', 'description', 'completed', 'deadline_at'}
+
+    # Extract keys from the JSON request
+    if not set(data.keys()).issubset(permitted_fields):
+        return jsonify({'error': 'Invalid fields in request'}), 400
+    
+    # Ensure the 'title' variable is present
+    if 'title' not in data:
+        return jsonify({'error': 'Title is required'}), 400
+
     """Create a new todo item and return the created item"""
     todo = Todo(
-        title=request.json.get('title'),
-        description=request.json.get('description'),
-        completed=request.json.get('completed', False),
+        title=data.get('title'),
+        description=data.get('description'),
+        completed=data.get('completed', False),
     )
 
-    if 'deadline_at' in request.json:
-        todo.deadline_at = datetime.fromisoformat(request.json.get('deadline_at'))
+    if 'deadline_at' in data:
+        todo.deadline_at = datetime.fromisoformat(data.get('deadline_at'))
 
     # Adds a new record to the database or will update an existing record.
     db.session.add(todo)
@@ -65,6 +89,13 @@ def update_todo(todo_id):
 
     if todo is None:
         return jsonify({'error': 'Todo not found'}), 404
+
+    # Permitted fields
+    permitted_fields = {'title', 'description', 'completed', 'deadline_at'}
+
+    # Extract keys from the JSON request
+    if not set(request.json.keys()).issubset(permitted_fields):
+        return jsonify({'error': 'Invalid fields in request'}), 400
     
     todo.title = request.json.get('title', todo.title)
     todo.description = request.json.get('description', todo.description)
