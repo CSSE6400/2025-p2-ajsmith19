@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from todo.models import db
 from todo.models.todo import Todo
-from datetime import datetime
+from datetime import datetime, timedelta
  
 api = Blueprint('api', __name__, url_prefix='/api/v1') 
 
@@ -28,6 +28,16 @@ def get_todos():
     completed = request.args.get('completed')
     if completed is not None:
         query = query.filter_by(completed=True)
+
+    window = request.args.get('window')
+    if window is not None:
+        try:
+            days = int(window)
+            # timedelta To get the difference between now and x amount of days
+            cutoff = datetime.utcnow() + timedelta(days=days)
+            query = query.filter(Todo.deadline_at <= cutoff)
+        except ValueError:
+            return jsonify({'error': 'Invalid.'}), 400
 
     """Return the list of todo items"""
     todos = query.all()
