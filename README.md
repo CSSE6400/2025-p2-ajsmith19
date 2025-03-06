@@ -8,6 +8,11 @@ Please see the [instructions](https://csse6400.uqcloud.net/practicals/week02.pdf
 Update this README file with appropriate information about your project,
 including how to run it.
 
+### Dependencies
+Will need to install Flask-SQLAlchemy:
+
+poetry add flask-sqlalchemy
+
 There are [resources](https://www.makeareadme.com) available to help you write a good README file.
 
 

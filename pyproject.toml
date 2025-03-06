@@ -1,13 +1,14 @@
 [tool.poetry]
 name = "2024-p2"
 version = "0.1.0"
-description = ""
+description = "Week 2 Practical for CSSE6400"
 authors = []
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
 flask = "^3.0.2"
+flask-sqlalchemy = "^3.1.1"
 
 
 [build-system]
